@@ -792,6 +792,7 @@ libs-y += drivers/usb/dwc3/
 libs-y += drivers/usb/common/
 libs-y += drivers/usb/emul/
 libs-y += drivers/usb/eth/
+libs-$(CONFIG_USB_DEVICE) += drivers/usb/gadget/
 libs-$(CONFIG_USB_GADGET) += drivers/usb/gadget/
 libs-$(CONFIG_USB_GADGET) += drivers/usb/gadget/udc/
 libs-y += drivers/usb/host/
@@ -1547,7 +1548,10 @@ flash.bin: spl/u-boot-spl.bin u-boot.itb FORCE
 endif
 endif
 
-u-boot-with-spl.imx u-boot-with-nand-spl.imx: SPL u-boot.bin FORCE
+u-boot.uim: u-boot.bin FORCE
+	$(Q)$(MAKE) $(build)=arch/arm/mach-imx $@
+
+u-boot-with-spl.imx u-boot-with-nand-spl.imx: SPL $(if $(CONFIG_OF_SEPARATE),u-boot.img,u-boot.uim) FORCE
 	$(Q)$(MAKE) $(build)=arch/arm/mach-imx $@
 
 MKIMAGEFLAGS_u-boot.ubl = -n $(UBL_CONFIG) -T ublimage -e $(CONFIG_SYS_TEXT_BASE)
