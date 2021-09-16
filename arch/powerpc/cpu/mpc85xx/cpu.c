@@ -301,8 +301,7 @@ int checkcpu (void)
 int do_reset(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 /* Everything after the first generation of PQ3 parts has RSTCR */
-#if defined(CONFIG_ARCH_MPC8540) || defined(CONFIG_ARCH_MPC8541) || \
-	defined(CONFIG_ARCH_MPC8555) || defined(CONFIG_ARCH_MPC8560)
+#if defined(CONFIG_ARCH_MPC8540) || defined(CONFIG_ARCH_MPC8560)
 	unsigned long val, msr;
 
 	/*
@@ -395,7 +394,9 @@ int cpu_mmc_init(struct bd_info *bis)
 void print_reginfo(void)
 {
 	print_tlbcam();
+#ifdef CONFIG_FSL_LAW
 	print_laws();
+#endif
 #if defined(CONFIG_FSL_LBC)
 	print_lbc_regs();
 #endif

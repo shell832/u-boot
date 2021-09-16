@@ -114,7 +114,7 @@ static int initr_reloc(void)
 	return 0;
 }
 
-#ifdef CONFIG_ARM
+#if defined(CONFIG_ARM) || defined(CONFIG_RISCV)
 /*
  * Some of these functions are needed purely because the functions they
  * call return void. If we change them to return 0, these stubs can go away.
@@ -323,10 +323,16 @@ static int initr_manual_reloc_cmdtable(void)
 
 static int initr_binman(void)
 {
+	int ret;
+
 	if (!CONFIG_IS_ENABLED(BINMAN_FDT))
 		return 0;
 
-	return binman_init();
+	ret = binman_init();
+	if (ret)
+		printf("binman_init failed:%d\n", ret);
+
+	return ret;
 }
 
 #if defined(CONFIG_MTD_NOR_FLASH)
@@ -458,6 +464,8 @@ static int initr_env(void)
 		env_relocate();
 	else
 		env_set_default(NULL, 0);
+
+	env_import_fdt();
 
 	if (IS_ENABLED(CONFIG_OF_CONTROL))
 		env_set_hex("fdtcontroladdr",
@@ -599,7 +607,7 @@ static init_fnc_t init_sequence_r[] = {
 	initr_trace,
 	initr_reloc,
 	/* TODO: could x86/PPC have this also perhaps? */
-#ifdef CONFIG_ARM
+#if defined(CONFIG_ARM) || defined(CONFIG_RISCV)
 	initr_caches,
 	/* Note: For Freescale LS2 SoCs, new MMU table is created in DDR.
 	 *	 A temporary mapping of IFC high region is since removed,
@@ -625,6 +633,9 @@ static init_fnc_t init_sequence_r[] = {
 	initr_of_live,
 #ifdef CONFIG_DM
 	initr_dm,
+#endif
+#ifdef CONFIG_ADDR_MAP
+	initr_addr_map,
 #endif
 #if defined(CONFIG_ARM) || defined(CONFIG_NDS32) || defined(CONFIG_RISCV) || \
 	defined(CONFIG_SANDBOX)
@@ -661,9 +672,6 @@ static init_fnc_t init_sequence_r[] = {
 	initr_manual_reloc_cmdtable,
 #endif
 	arch_initr_trap,
-#ifdef CONFIG_ADDR_MAP
-	initr_addr_map,
-#endif
 #if defined(CONFIG_BOARD_EARLY_INIT_R)
 	board_early_init_r,
 #endif
